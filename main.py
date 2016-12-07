@@ -12,6 +12,7 @@ import json
 import ast
 import os
 import base64
+from time import sleep
 
 app = FlaskAPI(__name__)
 
@@ -102,37 +103,43 @@ def buildHCL_fnic_number(fnic):
 
 
 def hclCheck(servers):
-
+    count = 0
     for server in servers:
+        count = count + 1
+        print("checking server", str(count))
         #TODO write a check to make sure server PID in DB
 
         base_server_type = getServerType_PID(server['ucs']['@model'][0])
         #print(base_server_type)
+        sleep(1)
         serverType = getServerType(base_server_type['server_type'])
         #print(serverType)
+        sleep(1)
         serverModel = getServerModel(serverType['T_ID'], base_server_type['ID'])
         #print(serverModel)
-
         processor_hcl_name = buildHCL_processor_name(server['ucs']['computeBoard/processorUnit/@model'][0])
+        sleep(1)
         processor = getProcessor(serverModel['T_ID'], processor_hcl_name)
         #print(processor)
-
         osvendor_name = (server['esx']['fullName/~'][0].split()[0])
         #TODO if not VMware execption
-
+        sleep(1)
         osVendor = getOSVendor(processor['T_ID'], osvendor_name)
         #print(osVendor)
-
+        
         osversion_name = buildHCL_os_version(server['esx']['fullName/~'][0])
+        sleep(1)
         osVersion = getOSVersion(osVendor['T_ID'], osversion_name)
         #print(osVersion)
         firmware_hcl_name = buildHCL_firmware_name(server['ucs']['mgmtController/firmwareRunning/@version'][0])
+        sleep(1)
         firmwareVersion = getFirmware(osVersion['T_ID'], firmware_hcl_name)
         #print(firmwareVersion)
         manageType = 'UCSM'
         adapterinfo = lookupByPID(server['ucs']['adaptorUnit/@model'][0])
 
         if firmwareVersion != "UNSUPPORTED":
+            sleep(1)
             results = hclSearch(serverType['ID'], serverModel['ID'], processor['ID'], osVendor['ID'], osVersion['ID'],
                                 firmwareVersion['ID'], manageType)
             #print(results[0]['HardwareTypes']['Adapters']['CNA'])
